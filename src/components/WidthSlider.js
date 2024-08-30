@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from "react";
 import { Box, colors } from '@mui/material'
 import Slider from '@mui/material/Slider'
 import MuiInput from '@mui/material/Input';
@@ -10,15 +10,15 @@ const Input = styled(MuiInput)`
     `;
 
 export default function WidthSlider() {
-
-    const [value, setValue] = React.useState(25);
+    const [value, setValue] = useState(25);
+    console.log(value)
 
     const handleSliderChange = (event, newValue) => {
         setValue(newValue);
     };
 
     const handleInputChange = (event) => {
-    setValue(event.target.value === '' ? 0 : Number(event.target.value));
+        setValue(event.target.value === '' ? 0 : Number(event.target.value));
     };
 
     return (
@@ -26,6 +26,7 @@ export default function WidthSlider() {
             <Grid container spacing={2} alignItems="center">
                 <Grid item xs>
                     <Slider 
+                        sx={{color: "#FB773C"}}
                         value={typeof value === 'number' ? value : 0}
                         onChange={handleSliderChange}
                         aria-labelledby="input-slider"
@@ -34,7 +35,6 @@ export default function WidthSlider() {
                         defaultValue="{25}" 
                         aria-label="width" 
                         valueLabelDisplay="off"
-                        sx={{color: "#FB773C"}}
                     />
                     
                 </Grid>
@@ -44,21 +44,19 @@ export default function WidthSlider() {
                         sx={{color: "#ECEEF9"}}
                         
                         disableUnderline={true}
-                        // className="slider--input"
+                        className="slider--input"
                         variant="Outlined"
                         value={value}
-                        size="small"
+                        size="medium"
                         onChange={handleInputChange}
                         inputProps={{
-                        step: 10,
-                        min: 0,
-                        max: 100,
-                        type: 'number',
-                        
-                        'aria-labelledby': 'input-slider',
+                            step: 1,
+                            min: 0,
+                            max: 100,
+                            type: 'number',
+                            'aria-labelledby': 'input-slider',
                         }}
                     />
-                    {/* <div color="white">{value}</div> */}
                 </Grid>
 
             </Grid>

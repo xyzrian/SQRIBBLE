@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -15,18 +20,17 @@ body {
   top: 0px;
   background: #180161;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25);
-
 }
 
 .nav--title {
   margin: 0px;
   margin-left: 20px;
-  padding: 20px 15px;
+  padding: 16px 16px;
 
   font-family: 'Arvo';
   font-style: italic;
   font-weight: 700;
-  font-size: 2.5rem;
+  font-size: 2.4rem;
   line-height: 30px;
 
   align-items: center;
@@ -37,46 +41,11 @@ body {
 
 }
 
-/* .nav--icon {
-  margin-right: auto;
-  align-self: center;
-  height: 56px;
 
-} */
-
-.color--button {
-  /* margin-right: auto;
-  align-self: center;
-  display: block;
-  margin: 0px;
-  padding: 20px 15px;
-  border: 0;
-  border-radius: 50%;
-
-  text-align: center;
-  text-decoration: none;
-  display: inline-block; */
-  height: 25px;
-  width: 25px;
-  /* background-color: rgba(57, 82, 212, 1); */
-  border-radius: 50%;
-  /* display: inline-block; */
-  align-self: center;
-  margin-right: auto;
-  margin: 20px 15px;
+.color--button:hover {
+  background-image: linear-gradient(rgb(0 0 0/20%) 0 0) !important;
 }
 
-.primary {
-
-  background-color: rgba(57, 82, 212, 1);
-
-}
-
-.secondary {
-  
-  background-color: rgba(236, 238, 249, 1);
-
-}
 
 .slider--box {
   align-self: center;
@@ -98,17 +67,28 @@ body {
 .slider--input {
 }
 
-.canvas--div {
-  /* width: 100%; */
-  /* position: relative; */
-  height: fit-content;
-  /* overflow: hidden; */
+
+
+.colorPicker {
+  padding: 20px 5px;
+  /* position: absolute; */
 }
 
-.canvas--image {
-  width:100%;
-  height:auto;
-  /* height: fit-content;
-  overflow-y: hidden; */
+
+.container {
+  position: relative;
 }
 
+#base,
+#scratch {
+  position: absolute;
+  cursor: grabbing;
+  object-fit: "cover";
+}
+
+#scratch {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
