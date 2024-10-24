@@ -1,59 +1,63 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { CirclePicker } from 'react-color';
+import { AppContext } from '../Providers';
 
-class ColorSelector extends React.Component {
-    // console.log(props.color)
+const ColorSelector = ({button}) => {
 
-    state = {
-        background: this.props.color,
-        displayColorPicker: false,
-        button: this.props.id
+    const state = useContext(AppContext);
+
+    const [color, setter] = button === "button1" ? 
+    [state.primColor, state.setPrimColor] : button == "button2" ? 
+    [state.secColor, state.setSecColor] : []
+
+    const [displayColorPicker, setDisplayColorPicker] = useState(false);
+
+    const handleChange = (color, event) => {
+        setDisplayColorPicker(cur => !cur)
     }
 
-
-
-    handleChange = (color, event) => {
-        this.setState({ displayColorPicker: !this.state.displayColorPicker })
-    }
-
-    handleClick = () => {
+    const handleClick = () => {
         console.log("click")
-        this.setState({ displayColorPicker: !this.state.displayColorPicker })
+        setDisplayColorPicker(cur => !cur)
     }
 
-    handleChangeComplete = (color) => {
-        this.setState({ background: color.hex })
+    const handleChangeComplete = (color) => {
+        setter(color.hex)
     }
 
-    handleHover = () => {
+    const handleHover = () => {
 
     }
 
-    render() {
-        return(
-            <>
-                <button type="button" 
-                    class="color--button"
-                    style={{
-                            backgroundColor: this.state.background,
-                            height: "25px",
-                            width: "25px",
-                            alignSelf: "center",
-                            margin: "20px 15px",
-                        }} 
-                    onClick={this.handleClick} onMouseOver={this.handleHover}></button>
-   
-                { this.state.displayColorPicker && <CirclePicker 
-                    className="colorPicker"
-                    color={ this.state.background }
-                    colors={['rgb(79, 23, 135)', 'rgb(235, 54, 120)', 'rgb(251, 119, 60)', 'rgb(255,255,255)']}
-                    circleSize={25}
-                    // onChange={ this.handleChange } 
-                    onChangeComplete={ this.handleChangeComplete }
-                />}
-            </>
-        )
-    }
+    useEffect(() => {
+        console.log(button)
+    })
+
+    return (
+        <>
+            <button type="button" 
+                class="color--button"
+                style={{
+                        backgroundColor: color,
+                        height: "25px",
+                        width: "25px",
+                        alignSelf: "center",
+                        margin: "20px 15px",
+                    }} 
+                onClick={handleClick} onMouseOver={handleHover}></button>
+
+            { displayColorPicker && <CirclePicker 
+                className="colorPicker"
+                color={ state.background }
+                colors={['rgb(79, 23, 135)', 'rgb(235, 54, 120)', 'rgb(251, 119, 60)', 'rgb(255,255,255)']}
+                circleSize={25}
+                // onChange={ this.handleChange } 
+                onChangeComplete={ handleChangeComplete }
+            />}
+        </>
+    )
+
 }
+
 
 export default ColorSelector;

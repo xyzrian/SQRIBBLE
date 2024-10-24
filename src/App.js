@@ -3,6 +3,7 @@ import { useEffect, useState, createContext } from "react";
 // import { Stage, Container, Sprite, Text, AppProvider } from '@pixi/react';
 import Navbar from './components/Navbar';
 import Canvas from './components/Canvas'
+import {Providers} from './Providers';
 
 export default function App() {
 
@@ -12,10 +13,12 @@ export default function App() {
   // const [brushSize, setBrushSize] = useState('25')
 
   return (
-    <div className="App">
-        <Navbar />
-        <Canvas />
-    </div>
+
+    <Providers>
+      <div className="App">
+          <Navbar />
+          <Canvas />
+      </div>
+    </Providers>
   );
 }
-

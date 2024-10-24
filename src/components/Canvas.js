@@ -72,7 +72,6 @@ const Canvas = () => {
 
         const handleMouseDown = (event) => {
             isDragging = true; 
-            //this didnt fix error out of bounds btw
             if(typeof event !== "undefined") {
               const { x, y } = getMouseCoordinates(event);
               scratch(x, y);
