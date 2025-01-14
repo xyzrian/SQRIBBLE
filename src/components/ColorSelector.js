@@ -51,7 +51,6 @@ const ColorSelector = ({button}) => {
                 color={ state.background }
                 colors={['rgb(79, 23, 135)', 'rgb(235, 54, 120)', 'rgb(251, 119, 60)', 'rgb(255,255,255)']}
                 circleSize={25}
-                // onChange={ this.handleChange } 
                 onChangeComplete={ handleChangeComplete }
             />}
         </>
