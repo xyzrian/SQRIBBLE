@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import WidthSlider from "./WidthSlider";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { AppContext } from '../Providers';
 import "../index.css"
 
@@ -7,10 +6,13 @@ var TopCanvas = '/images/CanvasSquare1.png'
 var BottomCanvas = '/images/CanvasSquare2.png'
 
 const Canvas = () => {
-    // const [brushSize, setBrushSize] = useState(15);
-    // const state = useContext(AppContext);
-    const { brushSize, setBrushSize } = useContext(AppContext);
 
+    const { brushSize } = useContext(AppContext);
+    const brushSizeRef = useRef(brushSize);
+
+    useEffect(() => {
+      brushSizeRef.current = brushSize;
+    }, [brushSize]);
 
     useEffect(() => {
       let isShifting = false;
@@ -53,7 +55,7 @@ const Canvas = () => {
       const scratch = (x, y) => {
           canvasContext.globalCompositeOperation = "destination-out";
           canvasContext.beginPath();
-          canvasContext.arc(x, y, brushSize, 0, 2 * Math.PI); // x, y, radius of circle, keep 0, keep the same
+          canvasContext.arc(x, y, brushSizeRef.current, 0, 2 * Math.PI); // x, y, radius of circle, keep 0, keep the same
           canvasContext.fill();
       };
 
@@ -140,7 +142,6 @@ const Canvas = () => {
 
     return (
         <div className="container">
-            {/* <WidthSlider value={brushSize} onChange={(newValue) => setBrushSize(newValue)} /> */}
             <canvas 
               id="base"
               width={ window.innerWidth}

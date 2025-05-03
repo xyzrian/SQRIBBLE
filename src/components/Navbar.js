@@ -13,9 +13,8 @@ export default function Navbar() {
 
             <ColorSelector button="button1"/>
             <ColorSelector button="button2"/>
-            {/* <WidthSlider /> */}
-            <WidthSlider value={brushSize} onChange={(newValue) => setBrushSize(newValue)} />
-            {/* <WidthSlider value={brushSize} onChange={setBrushSize} /> */}
+            
+            <WidthSlider />
         </nav>
     )
 }
