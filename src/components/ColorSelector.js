@@ -1,62 +1,79 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { CirclePicker } from 'react-color';
 import { AppContext } from '../Providers';
 
-const ColorSelector = ({button}) => {
+const ColorSelector = ({ button }) => {
+  const { primColor, secColor, setPrimColor, setSecColor } = useContext(AppContext);
 
-    const state = useContext(AppContext);
+  const color = button === 'button1' ? primColor : secColor;
+  const setColor = button === 'button1' ? setPrimColor : setSecColor;
 
-    const [color, setter] = button === "button1" ? 
-    [state.primColor, state.setPrimColor] : button == "button2" ? 
-    [state.secColor, state.setSecColor] : []
+  const [displayColorPicker, setDisplayColorPicker] = useState(false);
 
-    const [displayColorPicker, setDisplayColorPicker] = useState(false);
+  const handleClick = () => {
+    setDisplayColorPicker(prev => !prev);
+  };
 
-    const handleChange = (color, event) => {
-        setDisplayColorPicker(cur => !cur)
+  const handleClose = () => {
+    setDisplayColorPicker(false);
+  };
+
+  const handleChange = (newColor) => {
+    setColor(newColor.hex);
+    setDisplayColorPicker(false);
+  };
+
+  const handleHover = (color, event) => {
+    // not used atm
+    console.log('Hover color:', color.hex);
+  };
+
+  const styles = {
+    wrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      margin: '20px 0',
+    },
+    button: {
+      backgroundColor: color,
+      height: '25px',
+      width: '25px',
+      margin: '0 15px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+    },
+    picker: {
+      marginLeft: '10px',
     }
+  };
 
-    const handleClick = () => {
-        console.log("click")
-        setDisplayColorPicker(cur => !cur)
-    }
-
-    const handleChangeComplete = (color) => {
-        setter(color.hex)
-    }
-
-    const handleHover = () => {
-
-    }
-
-    useEffect(() => {
-        console.log(button)
-    })
-
-    return (
-        <>
-            <button type="button" 
-                class="color--button"
-                style={{
-                        backgroundColor: color,
-                        height: "25px",
-                        width: "25px",
-                        alignSelf: "center",
-                        margin: "20px 15px",
-                    }} 
-                onClick={handleClick} onMouseOver={handleHover}></button>
-
-            { displayColorPicker && <CirclePicker 
-                className="colorPicker"
-                color={ state.background }
-                colors={['rgb(79, 23, 135)', 'rgb(235, 54, 120)', 'rgb(251, 119, 60)', 'rgb(255,255,255)']}
-                circleSize={25}
-                onChangeComplete={ handleChangeComplete }
-            />}
-        </>
-    )
-
-}
-
+  return (
+    <div style={styles.wrapper}>
+      <button
+        type="button"
+        className="color--button"
+        style={styles.button}
+        onClick={handleClick}
+      />
+      {displayColorPicker && (
+        <div style={styles.picker}>
+          <div style={styles.cover} onClick={handleClose} />
+          <CirclePicker
+            color={color}
+            onChangeComplete={handleChange}
+            onSwatchHover={handleHover}
+            circleSize={20}
+            circleSpacing={12}
+            width="220px"
+            colors={[
+                '#4F1787', '#EB3678', '#FB773C', '#000000', '#FFFFFF', '#3952d4',
+            ]}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default ColorSelector;

@@ -2,17 +2,36 @@ import React, { useEffect, useState, useRef, useContext } from "react";
 import { AppContext } from '../Providers';
 import "../index.css"
 
-var TopCanvas = '/images/CanvasSquare1.png'
-var BottomCanvas = '/images/CanvasSquare2.png'
 
 const Canvas = () => {
 
-    const { brushSize } = useContext(AppContext);
+    const { brushSize, primColor, secColor } = useContext(AppContext);
     const brushSizeRef = useRef(brushSize);
 
     useEffect(() => {
       brushSizeRef.current = brushSize;
     }, [brushSize]);
+
+    const createPattern = (primaryColor, secondaryColor, orientation = "vertical") => {
+      const patternCanvas = document.createElement("canvas");
+      patternCanvas.width = 64;
+      patternCanvas.height = 64;
+      const ctx = patternCanvas.getContext("2d");
+  
+      if (orientation === "vertical") {
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(0, 0, 64, 32);
+        ctx.fillStyle = secondaryColor;
+        ctx.fillRect(0, 32, 64, 32);
+      } else {
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(0, 0, 32, 64);
+        ctx.fillStyle = secondaryColor;
+        ctx.fillRect(32, 0, 32, 64);
+      }
+  
+      return ctx.createPattern(patternCanvas, 'repeat');
+    };
 
     useEffect(() => {
       let isShifting = false;
@@ -29,27 +48,15 @@ const Canvas = () => {
       backgroundContext.canvas.height = window.innerHeight;
 
       const initializeCanvas = () => {
-        const img = new Image()
-        img.src = TopCanvas;
-        img.onload = () => {
-          const pat = canvasContext.createPattern(img, 'repeat')
-          canvasContext.fillStyle = pat;
-          canvasContext.fill();
-          canvasContext.rect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height)
-          canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height)
-        };
+        const pat = createPattern(primColor, secColor, "vertical");
+        canvasContext.fillStyle = pat;
+        canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);  
       };
 
       const initializeBackground = () => {
-          const img = new Image()
-          img.src = BottomCanvas;
-          img.onload = () => {
-            const pat = backgroundContext.createPattern(img, 'repeat')
-            backgroundContext.fillStyle = pat;
-            backgroundContext.fill();
-            backgroundContext.rect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height)
-            backgroundContext.fillRect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height)
-          };
+        const pat = createPattern(primColor, secColor, "horizontal");
+        backgroundContext.fillStyle = pat;
+        backgroundContext.fillRect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height);
       };
 
       const scratch = (x, y) => {
@@ -59,15 +66,15 @@ const Canvas = () => {
           canvasContext.fill();
       };
 
-      const drawLine = (x, y) => {
-          canvasContext.globalCompositeOperation = "destination-out";
-          canvasContext.beginPath();
-          // canvasContext.arc(x, y, 15, 0, 2 * Math.PI);
-          canvasContext.moveTo(x, y)
-          canvasContext.lineTo(x, y)
-          // canvasContext.lineWidth = 15;
-          canvasContext.stroke();
-      }
+      // const drawLine = (x, y) => {
+      //     canvasContext.globalCompositeOperation = "destination-out";
+      //     canvasContext.beginPath();
+      //     // canvasContext.arc(x, y, 15, 0, 2 * Math.PI);
+      //     canvasContext.moveTo(x, y)
+      //     canvasContext.lineTo(x, y)
+      //     // canvasContext.lineWidth = 15;
+      //     canvasContext.stroke();
+      // }
 
       const getMouseCoordinates = (event) => {
           const rect = canvasElement.getBoundingClientRect();
@@ -100,9 +107,12 @@ const Canvas = () => {
       };
 
       const handleMouseLeave = () => {
-          isDragging = false;
+          isDragging = false; // need to change so that it stays pressed down if still pressing
+          // but dont scratch upon return if mouse button isn't down...
       };
 
+
+      // shift key not currently used...
       const handleKeyDown = (event) => {
         if (event.keyCode === 16 || event.charCode === 16) {
           isShifting = true;
@@ -140,6 +150,33 @@ const Canvas = () => {
       };
   }, []);
 
+    useEffect(() => {
+      const backgroundElement = document.getElementById("base");
+      const backgroundContext = backgroundElement.getContext("2d");
+      const backgroundPattern = createPattern(primColor, secColor, "horizontal");
+      backgroundContext.fillStyle = backgroundPattern;
+      backgroundContext.fillRect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height);
+    
+      const canvasElement = document.getElementById("scratch");
+      const canvasContext = canvasElement.getContext("2d");
+
+      // Preserve drawing 
+      const imageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+      const alphaMask = new Uint8ClampedArray(imageData.data); 
+      // console.log(alphaMask);  
+    
+      const scratchPattern = createPattern(primColor, secColor, "vertical");
+      canvasContext.globalCompositeOperation = "source-over";
+      canvasContext.fillStyle = scratchPattern;
+      canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    
+      const newImageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+      for (let i = 3; i < newImageData.data.length; i += 4) {
+        newImageData.data[i] = alphaMask[i]; // Set alpha from old
+      }
+      canvasContext.putImageData(newImageData, 0, 0);
+    }, [primColor, secColor]);
+
     return (
         <div className="container">
             <canvas 
@@ -152,10 +189,7 @@ const Canvas = () => {
                 id="scratch"
                 width={ window.innerWidth}
                 height={ window.innerHeight}
-                
-                style={{
-                    cursor: 'auto'
-                }}
+                style={{cursor: 'auto'}}
             ></canvas>
         </div>
     );
