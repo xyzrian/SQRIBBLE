@@ -4,9 +4,9 @@ export const AppContext = createContext();
 
 export const Providers = ({children}) => {
 
-    const [primColor, setPrimColor] = useState("rgb(57, 82, 212)");
-    const [secColor, setSecColor] = useState("rgba(236, 238, 249, 1)");
-    const [brushSize, setBrushSize] = useState(15);
+    const [primColor, setPrimColor] = useState("#3952d4"); //blue
+    const [secColor, setSecColor] = useState("#ffffff"); //white
+    const [brushSize, setBrushSize] = useState(20);
 
     return (
         <AppContext.Provider value={{

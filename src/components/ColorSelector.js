@@ -2,72 +2,73 @@ import React, { useContext, useState } from 'react';
 import { CirclePicker } from 'react-color';
 import { AppContext } from '../Providers';
 
-const ColorSelector = ({ button }) => {
+const ColorSelector = () => {
   const { primColor, secColor, setPrimColor, setSecColor } = useContext(AppContext);
 
-  const color = button === 'button1' ? primColor : secColor;
-  const setColor = button === 'button1' ? setPrimColor : setSecColor;
-
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
+  const [activeColorTarget, setActiveColorTarget] = useState(null); // 'prim' or 'sec'
 
-  const handleClick = () => {
-    setDisplayColorPicker(prev => !prev);
+  const handleButtonClick = (target) => {
+    setActiveColorTarget(target);
+    setDisplayColorPicker(true);
   };
 
-  const handleClose = () => {
-    setDisplayColorPicker(false);
-  };
-
-  const handleChange = (newColor) => {
-    setColor(newColor.hex);
-    setDisplayColorPicker(false);
-  };
-
-  const handleHover = (color, event) => {
-    // not used atm
-    console.log('Hover color:', color.hex);
+  const handleColorChange = (color) => {
+    if (activeColorTarget === 'prim') {
+      setPrimColor(color.hex);
+    } else if (activeColorTarget === 'sec') {
+      setSecColor(color.hex);
+    }
+    setDisplayColorPicker(false); // close after selecting
   };
 
   const styles = {
-    wrapper: {
+    container: {
       display: 'flex',
       alignItems: 'center',
-      margin: '20px 0',
+      gap: '10px',
+      position: 'relative',
     },
-    button: {
-      backgroundColor: color,
+    colorButton: (bgColor) => ({
+      backgroundColor: bgColor,
       height: '25px',
       width: '25px',
-      margin: '0 15px',
-      border: 'none',
+      border: '1px solid #ccc',
       borderRadius: '4px',
       cursor: 'pointer',
+    }),
+    pickerWrapper: {
+      marginLeft: '20px',
     },
-    picker: {
-      marginLeft: '10px',
-    }
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.container}>
       <button
-        type="button"
-        className="color--button"
-        style={styles.button}
-        onClick={handleClick}
+        style={styles.colorButton(primColor)}
+        onClick={() => handleButtonClick('prim')}
+        title="Primary Color"
       />
+      <button
+        style={styles.colorButton(secColor)}
+        onClick={() => handleButtonClick('sec')}
+        title="Secondary Color"
+      />
+
       {displayColorPicker && (
-        <div style={styles.picker}>
-          <div style={styles.cover} onClick={handleClose} />
+        <div style={styles.pickerWrapper}>
           <CirclePicker
-            color={color}
-            onChangeComplete={handleChange}
-            onSwatchHover={handleHover}
+            color={activeColorTarget === 'prim' ? primColor : secColor}
+            onChangeComplete={handleColorChange}
             circleSize={20}
             circleSpacing={12}
             width="220px"
             colors={[
-                '#4F1787', '#EB3678', '#FB773C', '#000000', '#FFFFFF', '#3952d4',
+              '#f44336', '#e91e63', '#9c27b0', '#673ab7',
+              '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
+              '#009688', '#4caf50', '#8bc34a', '#cddc39',
+              '#ffeb3b', '#ffc107', '#ff9800', '#ff5722',
+              '#795548', '#607d8b', '#ffffff', '#000000'
             ]}
           />
         </div>
