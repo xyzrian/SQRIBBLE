@@ -1,6 +1,7 @@
 import WidthSlider from "./WidthSlider"
 import ColorSelector from "./ColorSelector"
 import Undo from "./Undo"
+import Clear from "./Clear"
 
 export default function Navbar() {
   return (
@@ -10,6 +11,7 @@ export default function Navbar() {
         <ColorSelector />
         <div className="nav--tools">
           <Undo />
+          <Clear />
           <WidthSlider />
         </div>
       </div>

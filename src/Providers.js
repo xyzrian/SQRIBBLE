@@ -31,52 +31,79 @@ export const Providers = ({ children }) => {
     setCanvasHistory((prevHistory) => {
       if (prevHistory.length === 0) return prevHistory;
 
-      // Remove the *current* state and compute the new "last" (previous) state
+      // Remove the current state and compute the previous state
       const newHistory = prevHistory.slice(0, -1);
       const prevState = newHistory[newHistory.length - 1];
 
       const canvasElement = document.getElementById("scratch");
-      if (canvasElement && prevState) {
+      if (canvasElement) {
         const ctx = canvasElement.getContext("2d");
-        
-        // Extract the alpha mask from the previous state
-        const alphaMask = new Uint8ClampedArray(prevState.data);
-        
-        // Redraw the canvas with CURRENT colors
-        const createPattern = (primaryColor, secondaryColor) => {
-          const patternCanvas = document.createElement("canvas");
-          patternCanvas.width = 64;
-          patternCanvas.height = 64;
-          const patternCtx = patternCanvas.getContext("2d");
-          
-          // Top-left and bottom-right: primary
-          patternCtx.fillStyle = primaryColor;
-          patternCtx.fillRect(0, 0, 32, 32);
-          patternCtx.fillRect(32, 32, 32, 32);
-          // Top-right and bottom-left: secondary
-          patternCtx.fillStyle = secondaryColor;
-          patternCtx.fillRect(32, 0, 32, 32);
-          patternCtx.fillRect(0, 32, 32, 32);
-          
-          return patternCtx.createPattern(patternCanvas, 'repeat');
-        };
-        
-        const scratchPattern = createPattern(primColor, secColor);
-        ctx.globalCompositeOperation = "source-over";
-        ctx.fillStyle = scratchPattern;
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        
-        // Apply the old alpha mask to the new colored canvas
-        const newImageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        for (let i = 3; i < newImageData.data.length; i += 4) {
-          newImageData.data[i] = alphaMask[i];
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        if (prevState) {
+          ctx.putImageData(prevState, 0, 0);
         }
-        ctx.putImageData(newImageData, 0, 0);
       }
 
       return newHistory;
     });
-  }, [primColor, secColor]);
+  }, []);
+
+  const handleClear = useCallback(() => {
+    const canvasElement = document.getElementById("scratch");
+    if (!canvasElement) return;
+    
+    const canvasContext = canvasElement.getContext("2d");
+    
+    // Reset composite operation to source-over before clearing
+    canvasContext.globalCompositeOperation = "source-over";
+    
+    // Clear the canvas completely (make it transparent)
+    canvasContext.clearRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    
+    // Redraw the pattern with CURRENT colors
+    const createPattern = (primaryColor, secondaryColor, orientation = "vertical") => {
+      const patternCanvas = document.createElement("canvas");
+      patternCanvas.width = 64;
+      patternCanvas.height = 64;
+      const ctx = patternCanvas.getContext("2d");
+  
+      if (orientation === "vertical") {
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillRect(32, 32, 32, 32);
+        ctx.fillStyle = secondaryColor;
+        ctx.fillRect(32, 0, 32, 32);
+        ctx.fillRect(0, 32, 32, 32);
+      } else {
+        ctx.fillStyle = secondaryColor;
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillRect(32, 32, 32, 32);
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(32, 0, 32, 32);
+        ctx.fillRect(0, 32, 32, 32);
+      }
+  
+      return ctx.createPattern(patternCanvas, 'repeat');
+    };
+
+    const scratchPattern = createPattern(primColor, secColor, "vertical");
+    canvasContext.fillStyle = scratchPattern;
+    canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    
+    // Also update the background canvas with current colors
+    const backgroundElement = document.getElementById("base");
+    if (backgroundElement) {
+      const backgroundContext = backgroundElement.getContext("2d");
+      const backgroundPattern = createPattern(primColor, secColor, "horizontal");
+      backgroundContext.fillStyle = backgroundPattern;
+      backgroundContext.fillRect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height);
+    }
+    
+    // Clear history and save only this new cleared state
+    setCanvasHistory([]);
+    const imageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+    saveCanvasState(imageData);
+  }, [primColor, secColor, saveCanvasState]);
 
   return (
     <AppContext.Provider
@@ -89,6 +116,7 @@ export const Providers = ({ children }) => {
         setBrushSize,
         canUndo,
         handleUndo,
+        handleClear,
         saveCanvasState,
       }}
     >
