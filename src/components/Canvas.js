@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useRef, useContext } from "react";
 import { AppContext } from '../Providers';
 import "../index.css"
 
 
 const Canvas = () => {
-  const strokeHistoryRef = useRef([]);
-
     const { brushSize, primColor, secColor, saveCanvasState } = useContext(AppContext);
     const brushSizeRef = useRef(brushSize);
 
@@ -19,6 +17,7 @@ const Canvas = () => {
       patternCanvas.height = 64;
       const ctx = patternCanvas.getContext("2d");
   
+      // Create checkerboard pattern
       // orientation determines which color goes in top-left
       if (orientation === "vertical") {
         // Top-left and bottom-right: primary
@@ -48,7 +47,6 @@ const Canvas = () => {
 
 
     useEffect(() => {
-      let isShifting = false;
       let isDragging = false;
 
       const canvasElement = document.getElementById("scratch");
@@ -77,25 +75,14 @@ const Canvas = () => {
       const scratch = (x, y) => {
           canvasContext.globalCompositeOperation = "destination-out";
           canvasContext.beginPath();
-          canvasContext.arc(x, y, brushSizeRef.current, 0, 2 * Math.PI); // x, y, radius of circle, keep 0, keep the same
+          canvasContext.arc(x, y, brushSizeRef.current, 0, 2 * Math.PI);
           canvasContext.fill();
       };
-
-      // const drawLine = (x, y) => {
-      //     canvasContext.globalCompositeOperation = "destination-out";
-      //     canvasContext.beginPath();
-      //     // canvasContext.arc(x, y, 15, 0, 2 * Math.PI);
-      //     canvasContext.moveTo(x, y)
-      //     canvasContext.lineTo(x, y)
-      //     // canvasContext.lineWidth = 15;
-      //     canvasContext.stroke();
-      // }
 
       const getMouseCoordinates = (event) => {
           const rect = canvasElement.getBoundingClientRect();
           const x = (event.pageX || event.touches[0].pageX) - rect.left;
           const y = (event.pageY || event.touches[0].pageY) - rect.top;
-          console.log(x, y)
           return { x, y };
       };
 
@@ -126,27 +113,8 @@ const Canvas = () => {
       };
 
       const handleMouseLeave = () => {
-          isDragging = false; // need to change so that it stays pressed down if still pressing
-          // but dont scratch upon return if mouse button isn't down...
+          isDragging = false;
       };
-
-      
-
-
-      // shift key not currently used...
-      const handleKeyDown = (event) => {
-        if (event.keyCode === 16 || event.charCode === 16) {
-          isShifting = true;
-          console.log('shifting')
-        }
-      }
-
-      const handleKeyUp = (event) => {
-        if (event.keyCode === 16 || event.charCode === 16) {
-          isShifting = false;
-          console.log('not shifting')
-        }
-      }
 
       const isTouchDevice = 'ontouchstart' in window;
 
@@ -154,10 +122,6 @@ const Canvas = () => {
       canvasElement.addEventListener(isTouchDevice ? "touchmove" : "mousemove", handleMouseMove);
       canvasElement.addEventListener(isTouchDevice ? "touchend" : "mouseup", handleMouseUp);
       canvasElement.addEventListener("mouseleave", handleMouseLeave);
-
-      document.addEventListener("keydown", handleKeyDown);
-      document.addEventListener("keyup", handleKeyUp);
-
 
       initializeBackground();
       initializeCanvas();
@@ -169,9 +133,9 @@ const Canvas = () => {
           canvasElement.removeEventListener(isTouchDevice ? "touchstart" : "mousedown", handleMouseDown);
           canvasElement.removeEventListener(isTouchDevice ? "touchmove" : "mousemove", handleMouseMove);
           canvasElement.removeEventListener(isTouchDevice ? "touchend" : "mouseup", handleMouseUp);
-          canvasElement.removeEventListener("keydown", handleKeyDown);
           canvasElement.removeEventListener("mouseleave", handleMouseLeave);
       };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
     useEffect(() => {
@@ -186,8 +150,7 @@ const Canvas = () => {
 
       // Preserve drawing 
       const imageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
-      const alphaMask = new Uint8ClampedArray(imageData.data); 
-      // console.log(alphaMask);  
+      const alphaMask = new Uint8ClampedArray(imageData.data);
     
       const scratchPattern = createPattern(primColor, secColor, "vertical");
       canvasContext.globalCompositeOperation = "source-over";
@@ -196,7 +159,7 @@ const Canvas = () => {
     
       const newImageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
       for (let i = 3; i < newImageData.data.length; i += 4) {
-        newImageData.data[i] = alphaMask[i]; // Set alpha from old
+        newImageData.data[i] = alphaMask[i];
       }
       canvasContext.putImageData(newImageData, 0, 0);
     }, [primColor, secColor]);
@@ -205,14 +168,14 @@ const Canvas = () => {
         <div className="container">
             <canvas 
               id="base"
-              width={ window.innerWidth}
-              height={ window.innerHeight}
+              width={window.innerWidth}
+              height={window.innerHeight}
             ></canvas>
 
             <canvas
                 id="scratch"
-                width={ window.innerWidth}
-                height={ window.innerHeight}
+                width={window.innerWidth}
+                height={window.innerHeight}
                 style={{cursor: 'auto'}}
             ></canvas>
         </div>
