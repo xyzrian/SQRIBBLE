@@ -1,80 +1,99 @@
-import React, { useContext, useState } from 'react';
-import { CirclePicker } from 'react-color';
-import { AppContext } from '../Providers';
+"use client"
+
+import { useContext, useState, useRef, useEffect } from "react"
+import { HuePicker } from "react-color"
+import { AppContext } from "../Providers"
 
 const ColorSelector = () => {
-  const { primColor, secColor, setPrimColor, setSecColor } = useContext(AppContext);
+  const { primColor, secColor, setPrimColor, setSecColor } = useContext(AppContext)
 
-  const [displayColorPicker, setDisplayColorPicker] = useState(false);
-  const [activeColorTarget, setActiveColorTarget] = useState(null); // 'prim' or 'sec'
+  const [displayColorPicker, setDisplayColorPicker] = useState(false)
+  const [activeColorTarget, setActiveColorTarget] = useState(null) // 'prim' or 'sec'
+  const pickerRef = useRef(null)
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        pickerRef.current &&
+        !pickerRef.current.contains(event.target) &&
+        !event.target.classList.contains("color-button-prim") &&
+        !event.target.classList.contains("color-button-sec")
+      ) {
+        setDisplayColorPicker(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const handleButtonClick = (target) => {
-    setActiveColorTarget(target);
-    setDisplayColorPicker(true);
-  };
+    if (activeColorTarget === target && displayColorPicker) {
+      setDisplayColorPicker(false)
+    } else {
+      setActiveColorTarget(target)
+      setDisplayColorPicker(true)
+    }
+  }
 
   const handleColorChange = (color) => {
-    if (activeColorTarget === 'prim') {
-      setPrimColor(color.hex);
-    } else if (activeColorTarget === 'sec') {
-      setSecColor(color.hex);
+    if (activeColorTarget === "prim") {
+      setPrimColor(color.hex)
+    } else if (activeColorTarget === "sec") {
+      setSecColor(color.hex)
     }
-    setDisplayColorPicker(false); // close after selecting
-  };
-
-  const styles = {
-    container: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-      position: 'relative',
-    },
-    colorButton: (bgColor) => ({
-      backgroundColor: bgColor,
-      height: '25px',
-      width: '25px',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      cursor: 'pointer',
-    }),
-    pickerWrapper: {
-      marginLeft: '20px',
-    },
-  };
+  }
 
   return (
-    <div style={styles.container}>
-      <button
-        style={styles.colorButton(primColor)}
-        onClick={() => handleButtonClick('prim')}
-        title="Primary Color"
-      />
-      <button
-        style={styles.colorButton(secColor)}
-        onClick={() => handleButtonClick('sec')}
-        title="Secondary Color"
-      />
+    <div className="color-selector">
+      <div className="color-buttons">
+        <button
+          className="color-button color-button-prim"
+          onClick={() => handleButtonClick("prim")}
+          style={{ backgroundColor: primColor }}
+          title="Primary Color"
+          aria-label="Select primary color"
+        >
+          {/* <span className="color-label">P</span> */}
+        </button>
+        <button
+          className="color-button color-button-sec"
+          onClick={() => handleButtonClick("sec")}
+          style={{ backgroundColor: secColor }}
+          title="Secondary Color"
+          aria-label="Select secondary color"
+        >
+          {/* <span className="color-label">S</span> */}
+        </button>
+      </div>
 
       {displayColorPicker && (
-        <div style={styles.pickerWrapper}>
-          <CirclePicker
-            color={activeColorTarget === 'prim' ? primColor : secColor}
-            onChangeComplete={handleColorChange}
-            circleSize={20}
-            circleSpacing={12}
-            width="220px"
-            colors={[
-              '#f44336', '#e91e63', '#9c27b0', '#673ab7',
-              '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
-              '#009688', '#4caf50', '#8bc34a', '#cddc39',
-              '#ffeb3b', '#ffc107', '#ff9800', '#ff5722',
-              '#795548', '#607d8b', '#ffffff', '#000000'
-            ]}
+        <div className="color-picker-popover" ref={pickerRef}>
+          <div className="color-picker-header">
+            {activeColorTarget === "prim" ? "Primary Color" : "Secondary Color"}
+
+          </div>
+          <HuePicker
+            color={activeColorTarget === "prim" ? primColor : secColor}
+            onChange={handleColorChange}
+            disableAlpha={true}
           />
+          <div className="color-picker-footer">
+            {/* <div className="color-preview">
+              <div className="color-preview-prim" style={{ backgroundColor: primColor }}></div>
+              <div className="color-preview-sec" style={{ backgroundColor: secColor }}></div>
+            </div> */}
+            {/* <button className="color-picker-close" onClick={() => setDisplayColorPicker(false)}>
+              X
+            </button> */}
+          </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ColorSelector;
+export default ColorSelector

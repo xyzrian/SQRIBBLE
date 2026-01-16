@@ -4,8 +4,9 @@ import "../index.css"
 
 
 const Canvas = () => {
+  const strokeHistoryRef = useRef([]);
 
-    const { brushSize, primColor, secColor } = useContext(AppContext);
+    const { brushSize, primColor, secColor, saveCanvasState } = useContext(AppContext);
     const brushSizeRef = useRef(brushSize);
 
     useEffect(() => {
@@ -18,20 +19,33 @@ const Canvas = () => {
       patternCanvas.height = 64;
       const ctx = patternCanvas.getContext("2d");
   
+      // orientation determines which color goes in top-left
       if (orientation === "vertical") {
+        // Top-left and bottom-right: primary
         ctx.fillStyle = primaryColor;
-        ctx.fillRect(0, 0, 64, 32);
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillRect(32, 32, 32, 32);
+        // Top-right and bottom-left: secondary
         ctx.fillStyle = secondaryColor;
-        ctx.fillRect(0, 32, 64, 32);
+        ctx.fillRect(32, 0, 32, 32);
+        ctx.fillRect(0, 32, 32, 32);
       } else {
-        ctx.fillStyle = primaryColor;
-        ctx.fillRect(0, 0, 32, 64);
+        // Inverse pattern for horizontal
+        // Top-left and bottom-right: secondary
         ctx.fillStyle = secondaryColor;
-        ctx.fillRect(32, 0, 32, 64);
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillRect(32, 32, 32, 32);
+        // Top-right and bottom-left: primary
+        ctx.fillStyle = primaryColor;
+        ctx.fillRect(32, 0, 32, 32);
+        ctx.fillRect(0, 32, 32, 32);
       }
   
       return ctx.createPattern(patternCanvas, 'repeat');
     };
+
+
+
 
     useEffect(() => {
       let isShifting = false;
@@ -47,7 +61,7 @@ const Canvas = () => {
       backgroundContext.canvas.width = window.innerWidth;
       backgroundContext.canvas.height = window.innerHeight;
 
-      const initializeCanvas = () => {
+       const initializeCanvas = () => {
         const pat = createPattern(primColor, secColor, "vertical");
         canvasContext.fillStyle = pat;
         canvasContext.fillRect(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);  
@@ -58,6 +72,7 @@ const Canvas = () => {
         backgroundContext.fillStyle = pat;
         backgroundContext.fillRect(0, 0, backgroundContext.canvas.width, backgroundContext.canvas.height);
       };
+
 
       const scratch = (x, y) => {
           canvasContext.globalCompositeOperation = "destination-out";
@@ -104,12 +119,18 @@ const Canvas = () => {
 
       const handleMouseUp = (event) => {
           isDragging = false;
+
+          // Save snapshot of the whole canvas
+          const imageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+          saveCanvasState(imageData);
       };
 
       const handleMouseLeave = () => {
           isDragging = false; // need to change so that it stays pressed down if still pressing
           // but dont scratch upon return if mouse button isn't down...
       };
+
+      
 
 
       // shift key not currently used...
@@ -140,6 +161,9 @@ const Canvas = () => {
 
       initializeBackground();
       initializeCanvas();
+
+      const imageData = canvasContext.getImageData(0, 0, canvasContext.canvas.width, canvasContext.canvas.height);
+      saveCanvasState(imageData);
 
       return () => {
           canvasElement.removeEventListener(isTouchDevice ? "touchstart" : "mousedown", handleMouseDown);
