@@ -15,6 +15,16 @@ export const Providers = ({ children }) => {
     setCanUndo(canvasHistory.length > 1);
   }, [canvasHistory]);
 
+  // Save canvas state whenever colors change
+  useEffect(() => {
+    const canvasElement = document.getElementById("scratch");
+    if (canvasElement) {
+      const ctx = canvasElement.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+      saveCanvasState(imageData);
+    }
+  }, [primColor, secColor]);
+
   const saveCanvasState = useCallback((imageData) => {
     if (!imageData) return;
     // clone ImageData to avoid accidental mutation issues
@@ -31,17 +41,15 @@ export const Providers = ({ children }) => {
     setCanvasHistory((prevHistory) => {
       if (prevHistory.length === 0) return prevHistory;
 
-      // Remove the current state and compute the previous state
+      // Remove the current state and get the previous state
       const newHistory = prevHistory.slice(0, -1);
       const prevState = newHistory[newHistory.length - 1];
 
       const canvasElement = document.getElementById("scratch");
-      if (canvasElement) {
+      if (canvasElement && prevState) {
         const ctx = canvasElement.getContext("2d");
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        if (prevState) {
-          ctx.putImageData(prevState, 0, 0);
-        }
+        // Simply restore the previous canvas state
+        ctx.putImageData(prevState, 0, 0);
       }
 
       return newHistory;
@@ -123,4 +131,4 @@ export const Providers = ({ children }) => {
       {children}
     </AppContext.Provider>
   );
-};
+}
