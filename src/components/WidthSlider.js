@@ -54,10 +54,7 @@ export default function WidthSlider() {
                     fontWeight: 600,
                     fontSize: '14px',
                     textAlign: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     padding: '6px 8px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(251, 119, 60, 0.3)',
                 }}
             >
                 {brushSize}
