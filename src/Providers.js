@@ -15,16 +15,6 @@ export const Providers = ({ children }) => {
     setCanUndo(canvasHistory.length > 1);
   }, [canvasHistory]);
 
-  // Save canvas state whenever colors change
-  useEffect(() => {
-    const canvasElement = document.getElementById("scratch");
-    if (canvasElement) {
-      const ctx = canvasElement.getContext("2d");
-      const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-      saveCanvasState(imageData);
-    }
-  }, [primColor, secColor]);
-
   const saveCanvasState = useCallback((imageData) => {
     if (!imageData) return;
     // clone ImageData to avoid accidental mutation issues
@@ -48,13 +38,55 @@ export const Providers = ({ children }) => {
       const canvasElement = document.getElementById("scratch");
       if (canvasElement && prevState) {
         const ctx = canvasElement.getContext("2d");
-        // Simply restore the previous canvas state
-        ctx.putImageData(prevState, 0, 0);
+        
+        // First, redraw the base pattern with CURRENT colors
+        const createPattern = (primaryColor, secondaryColor, orientation = "vertical") => {
+          const patternCanvas = document.createElement("canvas");
+          patternCanvas.width = 64;
+          patternCanvas.height = 64;
+          const patternCtx = patternCanvas.getContext("2d");
+      
+          if (orientation === "vertical") {
+            patternCtx.fillStyle = primaryColor;
+            patternCtx.fillRect(0, 0, 32, 32);
+            patternCtx.fillRect(32, 32, 32, 32);
+            patternCtx.fillStyle = secondaryColor;
+            patternCtx.fillRect(32, 0, 32, 32);
+            patternCtx.fillRect(0, 32, 32, 32);
+          } else {
+            patternCtx.fillStyle = secondaryColor;
+            patternCtx.fillRect(0, 0, 32, 32);
+            patternCtx.fillRect(32, 32, 32, 32);
+            patternCtx.fillStyle = primaryColor;
+            patternCtx.fillRect(32, 0, 32, 32);
+            patternCtx.fillRect(0, 32, 32, 32);
+          }
+      
+          return patternCtx.createPattern(patternCanvas, 'repeat');
+        };
+
+        // Clear and redraw with current colors
+        ctx.globalCompositeOperation = "source-over";
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const scratchPattern = createPattern(primColor, secColor, "vertical");
+        ctx.fillStyle = scratchPattern;
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // Now apply only the transparent parts (brush strokes) from previous state
+        // Extract alpha channel from prevState and apply it to current canvas
+        const currentImageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        for (let i = 0; i < prevState.data.length; i += 4) {
+          // Copy the alpha channel from previous state
+          currentImageData.data[i + 3] = prevState.data[i + 3];
+        }
+        
+        ctx.putImageData(currentImageData, 0, 0);
       }
 
       return newHistory;
     });
-  }, []);
+  }, [primColor, secColor]);
 
   const handleClear = useCallback(() => {
     const canvasElement = document.getElementById("scratch");
